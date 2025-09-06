@@ -1,0 +1,47 @@
+<?php
+    /**
+     * Méthode qui ajoute une note en BDD
+     * @param array $note tableau de la note
+     * @return void ne retourne rien
+     */
+    function saveNote(array $note): void {
+        try {
+            
+            $request = "INSERT INTO note(title, content, created_at, id_users)
+            VALUE(?,?,?,?)";
+           
+            $req = connectBDD()->prepare($request);
+            
+            $req->bindParam(1, $note["title"], PDO::PARAM_STR);
+            $req->bindParam(2, $note["content"], PDO::PARAM_STR);
+            $req->bindParam(3, $note["created_at"], PDO::PARAM_STR);
+            $req->bindParam(4, $note["idUser"], PDO::PARAM_INT);
+            
+            $req->execute();
+        } catch(Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+    /**
+     * Méthode qui retourne la liste des notes d'un utilisateur (idUsers)
+     * @param int $idUsers
+     * @return array tableau des notes
+     */
+    function findAllNote(int $idUser): array {
+        try {
+            
+            $request = "SELECT n.id_note, n.title, n.content, n.created_at, u.id_users FROM note AS n
+            INNER JOIN users AS u ON n.id_users = u.id_users WHERE n.id_users = ? ORDER BY n.title";
+            //préparation
+            $req = connectBDD()->prepare($request);
+            
+            $req->bindParam(1, $idUser, PDO::PARAM_INT);
+            
+            $req->execute();
+            
+            return $req->fetchAll(PDO::FETCH_ASSOC);
+        } catch(Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+?>
